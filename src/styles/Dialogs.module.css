@@ -1,0 +1,26 @@
+.dialogs{
+    display: grid;
+    grid-template-columns: 2fr 10fr;
+}
+
+.dialogsItems{
+    background-color: olive;
+
+}
+
+.dialog{
+    cursor: pointer;
+
+}
+
+.messages{
+    background-color: darkgoldenrod;
+}
+
+.message{
+
+}
+
+.active{
+    color: #fff;
+}
