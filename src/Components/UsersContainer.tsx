@@ -29,9 +29,7 @@ type DispatchPropsType = {
     follow: (userId: number) => void
     unFollow: (userId: number) => void
 }
-type OwnProps = {
-    title: string
-}
+type OwnProps = {}
 
 class UsersContainer extends React.Component<MapPropsType & OwnProps & DispatchPropsType> {
     componentDidMount() {
@@ -47,19 +45,19 @@ class UsersContainer extends React.Component<MapPropsType & OwnProps & DispatchP
     render() {
         return (
             <>
-                {this.props.isFetching && <Loader/>}
-                {this.props.title}
-                <Users
-                    totalUsersCount={this.props.totalUsersCount}
-                    currentPage={this.props.currentPage}
-                    users={this.props.users}
-                    pageSize={this.props.pageSize}
-                    setCurrentPageHandler={this.setCurrentPageHandler}
-                    follow={this.props.follow}
-                    unFollow={this.props.unFollow}
-                    isFetching={this.props.isFetching}
-                    followUnfollowInProgress={this.props.followUnfollowInProgress}
-                />
+                {this.props.isFetching ? <Loader/> :
+                    <Users
+                        totalUsersCount={this.props.totalUsersCount}
+                        currentPage={this.props.currentPage}
+                        users={this.props.users}
+                        pageSize={this.props.pageSize}
+                        setCurrentPageHandler={this.setCurrentPageHandler}
+                        follow={this.props.follow}
+                        unFollow={this.props.unFollow}
+                        isFetching={this.props.isFetching}
+                        followUnfollowInProgress={this.props.followUnfollowInProgress}
+                    />
+                }
             </>
         )
     }

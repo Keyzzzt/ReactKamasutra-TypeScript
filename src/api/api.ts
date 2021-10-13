@@ -21,6 +21,7 @@ export type CommonResponse<D = {}> = {
     resultCode: ResultCodeEnum
     messages: Array<string>
     data: D
+    fieldsErrors: Array<string>
 }
 
 

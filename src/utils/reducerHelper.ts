@@ -2,11 +2,11 @@
 // TODO: типизировать any
 
 export const updateObjectInArray = (items: any, itemId: any, objectPropName: any, newObjectProps: any) => {
-    return items.map((u: any) => {
-        if(u[objectPropName] === itemId){
-            return {...u, ...newObjectProps}
+    return items.map((user: any) => {
+        if(user[objectPropName] === itemId){
+            return {...user, ...newObjectProps}
         }
-        return u
+        return user
 })
 }
 

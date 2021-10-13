@@ -2,10 +2,11 @@ import {updateObjectInArray} from "../../utils/reducerHelper";
 import {BaseThunkType, InferActionTypes, UserType} from "../../Types";
 import {Dispatch} from "redux";
 import {usersAPI} from "../../api/users-api";
-import {ResultCodeEnum} from "../../api/api";
+import {CommonResponse, ResultCodeEnum} from "../../api/api";
+import {log} from "util";
 
 
-type InitialStateType = typeof initialState
+export type InitialStateType = typeof initialState
 type ActionType = InferActionTypes<typeof actions>
 type ThunkType = BaseThunkType<ActionType>
 type DispatchType = Dispatch<ActionType>
@@ -17,7 +18,6 @@ const initialState = {
     currentPage: 1,
     isFetching: false,
     followUnfollowInProgress: [] as Array<number>, // Для того чтобы не disable все кнопки, мы сюда будем заносить UserID
-    fake: 10
 }
 
 export const usersReducer = (state = initialState, action: ActionType): InitialStateType => {
@@ -36,10 +36,10 @@ export const usersReducer = (state = initialState, action: ActionType): InitialS
             return {
                 ...state,
                 followUnfollowInProgress: action.payload.isFetching
-                        ?
+                    ?
                     // Нажали кнопку - занесли userId в массив followUnfollowInProgress
                     [...state.followUnfollowInProgress, action.payload.userId]
-                        :
+                    :
                     // Получили ответ с сервера - убрали userId из массива followUnfollowInProgress
                     [...state.followUnfollowInProgress.filter(id => id !== action.payload.userId)]
             }
@@ -52,6 +52,8 @@ export const usersReducer = (state = initialState, action: ActionType): InitialS
         //        })}
         case 'FOLLOW':
             return {...state, users: updateObjectInArray(state.users, action.payload, "id", {followed: true})}
+        case 'UNFOLLOW':
+            return {...state, users: updateObjectInArray(state.users, action.payload, "id", {followed: false})}
         // case UNFOLLOW:
         //     return {...state, users: state.users.map(user => {
         //             if(user.id === action.payload){
@@ -68,13 +70,16 @@ export const usersReducer = (state = initialState, action: ActionType): InitialS
 
 
 export const actions = {
-    followSuccessAC: (userId: number) => ({type: 'FOLLOW', payload:  userId} as const),
-    unFollowSuccessAC: (userId: number) => ({type: 'UNFOLLOW', payload:  userId} as const),
+    followSuccessAC: (userId: number) => ({type: 'FOLLOW', payload: userId} as const),
+    unFollowSuccessAC: (userId: number) => ({type: 'UNFOLLOW', payload: userId} as const),
     setUsersAC: (users: Array<UserType>) => ({type: 'SET_USERS', payload: users} as const),
     setCurrentPage: (pageNumber: number) => ({type: 'SET_ACTIVE_PAGE', payload: pageNumber} as const),
     setTotalUsersCountAC: (totalCount: number) => ({type: 'SET_TOTAL_COUNT', payload: totalCount} as const),
     toggleIsFetching: (isFetching: boolean) => ({type: 'TOGGLE_IS_FETCHING_USERS', payload: isFetching} as const),
-    toggleFollowingProgressAC: (isFetching: boolean, userId: number) => ({type: 'TOGGLE_IS_FOLLOWING', payload: {isFetching, userId}} as const)
+    toggleFollowingProgressAC: (isFetching: boolean, userId: number) => ({
+        type: 'TOGGLE_IS_FOLLOWING',
+        payload: {isFetching, userId}
+    } as const)
 }
 
 // Thunk creators
@@ -88,20 +93,20 @@ export const requestUsers = (currentPage: number, pageSize: number): ThunkType =
 
 }
 // Функция для сокращения кода в follow & unFollow
-const _followUnFollowFlow = async (dispatch: DispatchType, userId: number, apiMethod: any, actionCreator: (userId: number) => ActionType) => {
+const _followUnFollowFlow = async (dispatch: DispatchType, userId: number, apiMethod: (userId: number) => Promise<CommonResponse>, actionCreator: (userId: number) => ActionType) => {
     dispatch(actions.toggleFollowingProgressAC(true, userId))
     const res = await apiMethod(userId)
-    if(res.resultCode === ResultCodeEnum.Success ){
+    console.log(res)
+    if (res.resultCode === ResultCodeEnum.Success) {
         dispatch(actionCreator(userId))
     }
     dispatch(actions.toggleFollowingProgressAC(false, userId))
 }
 
-export const follow = (userId: number):ThunkType  => async (dispatch, getState) => {
-    _followUnFollowFlow(dispatch, userId, usersAPI.follow.bind(usersAPI), actions.followSuccessAC)
+export const follow = (userId: number): ThunkType => async (dispatch) => {
+   await _followUnFollowFlow(dispatch, userId, usersAPI.follow.bind(usersAPI), actions.followSuccessAC)
 }
 
-// TODO: При нажатии Unfollow не обновл\етс\ компонент
-export const unFollow = (userId: number): ThunkType => async (dispatch, getState) => {
-    _followUnFollowFlow(dispatch, userId, usersAPI.unFollow.bind(usersAPI), actions.unFollowSuccessAC)
+export const unFollow = (userId: number): ThunkType => async (dispatch) => {
+   await _followUnFollowFlow(dispatch, userId, usersAPI.unFollow.bind(usersAPI), actions.unFollowSuccessAC)
 }

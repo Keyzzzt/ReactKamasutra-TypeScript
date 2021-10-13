@@ -55,7 +55,7 @@ class App extends React.Component<MapPropsType & DispatchPropsType> {
                     <Route path='/dialogs' render={() => <SuspendedDialogs />}/>
                     {/*Если query параметр приходит не всегда, то нужен знак ?, иначе компонента не запустится*/}
                     <Route path='/profile/:userId?' render={() => <SuspendedProfile />}/>
-                    <Route path='/users' render={() => <UsersContainer title="Users"/>}/>
+                    <Route path='/users' render={() => <UsersContainer />}/>
                     <Route path='/login' render={() => <Login/>}/>
                 </div>
             </div>
