@@ -1,5 +1,6 @@
 import {CommonResponse, requestSetup} from "./api";
 import {UserType} from "../Types";
+import {FilterType} from "../redux/reducers/usersReducer";
 
 /**
  * ? Тут два варианта типизации, типизируем либо response либо метод запроса.......
@@ -22,9 +23,9 @@ type GetUsersType = {
 }
 
 export const usersAPI = {
-    getUsers: function (currentPage: number, pageSize: number) {
+    getUsers: function (currentPage: number, pageSize: number, filter: FilterType) {
         return requestSetup
-            .get<GetUsersType>(`users?page=${currentPage}&count=${pageSize}`)
+            .get<GetUsersType>(`users?page=${currentPage}&count=${pageSize}&term=${filter.term}` + (filter.friend === null ? '' : `&friend=${filter.friend}`))
             .then((response) => response.data)
     },
     follow: function (userId: number) {

@@ -3,13 +3,13 @@ import {BaseThunkType, InferActionTypes, UserType} from "../../Types";
 import {Dispatch} from "redux";
 import {usersAPI} from "../../api/users-api";
 import {CommonResponse, ResultCodeEnum} from "../../api/api";
-import {log} from "util";
 
 
 export type InitialStateType = typeof initialState
 type ActionType = InferActionTypes<typeof actions>
 type ThunkType = BaseThunkType<ActionType>
 type DispatchType = Dispatch<ActionType>
+export type FilterType = typeof initialState.filter
 
 const initialState = {
     users: [] as Array<UserType>,
@@ -18,6 +18,10 @@ const initialState = {
     currentPage: 1,
     isFetching: false,
     followUnfollowInProgress: [] as Array<number>, // Для того чтобы не disable все кнопки, мы сюда будем заносить UserID
+    filter: {
+        term: '',
+        friend: null as null | boolean
+    }
 }
 
 export const usersReducer = (state = initialState, action: ActionType): InitialStateType => {
@@ -63,6 +67,8 @@ export const usersReducer = (state = initialState, action: ActionType): InitialS
         //         })}
         case 'SET_ACTIVE_PAGE' :
             return {...state, currentPage: action.payload}
+        case 'SET_FILTER':
+            return {...state, filter: action.payload}
         default:
             return state
     }
@@ -79,14 +85,16 @@ export const actions = {
     toggleFollowingProgressAC: (isFetching: boolean, userId: number) => ({
         type: 'TOGGLE_IS_FOLLOWING',
         payload: {isFetching, userId}
-    } as const)
+    } as const),
+    setUserSearchFilter: (filter: FilterType) => ({type: 'SET_FILTER', payload: filter} as const)
 }
 
 // Thunk creators
-export const requestUsers = (currentPage: number, pageSize: number): ThunkType => async (dispatch, getState) => {
+export const requestUsers = (currentPage: number, pageSize: number, filter: FilterType): ThunkType => async (dispatch, getState) => {
     dispatch(actions.toggleIsFetching(true))
     dispatch(actions.setCurrentPage(currentPage))
-    const response = await usersAPI.getUsers(currentPage, pageSize)
+    dispatch(actions.setUserSearchFilter(filter))
+    const response = await usersAPI.getUsers(currentPage, pageSize, filter)
     dispatch(actions.toggleIsFetching(false))
     dispatch(actions.setUsersAC(response.items))
     dispatch(actions.setTotalUsersCountAC(response.totalCount))

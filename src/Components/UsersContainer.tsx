@@ -1,6 +1,6 @@
 import React from "react";
 import {connect} from "react-redux";
-import {requestUsers, follow, unFollow} from "../redux/reducers/usersReducer";
+import {requestUsers, follow, unFollow, FilterType} from "../redux/reducers/usersReducer";
 import Users from "./Users/Users";
 import Loader from "./common/Loader";
 import {
@@ -9,6 +9,7 @@ import {
     getIsFetching,
     getPageSize,
     getTotalUsersCount,
+    getUsersFilter,
     getUsersReselect
 } from "../redux/usersSelectors";
 import {UserType} from "../Types";
@@ -22,10 +23,11 @@ type MapPropsType = {
     totalUsersCount: number
     users: Array<UserType>
     followUnfollowInProgress: Array<number>
+    filter: FilterType
 
 }
 type DispatchPropsType = {
-    requestUsers: (pageNumber: number, pageSize: number) => void
+    requestUsers: (pageNumber: number, pageSize: number, filter: FilterType) => void
     follow: (userId: number) => void
     unFollow: (userId: number) => void
 }
@@ -33,13 +35,18 @@ type OwnProps = {}
 
 class UsersContainer extends React.Component<MapPropsType & OwnProps & DispatchPropsType> {
     componentDidMount() {
-        const {currentPage, pageSize, requestUsers} = this.props
-        requestUsers(currentPage, pageSize)
+        const {currentPage, pageSize, requestUsers, filter} = this.props
+        requestUsers(currentPage, pageSize, filter) // term - условие
     }
+    onPageChanged = (pageNumber: number) => {
+        const {requestUsers, pageSize, filter} = this.props
+        requestUsers(pageNumber, pageSize, filter)
+    }
+    onFilterChanged = (filter: FilterType) => {
 
-    setCurrentPageHandler = (pageNumber: number) => {
-        const {requestUsers, pageSize} = this.props
-        requestUsers(pageNumber, pageSize)
+        const {currentPage, pageSize, requestUsers} = this.props
+        requestUsers(currentPage, pageSize, filter)
+
     }
 
     render() {
@@ -51,11 +58,12 @@ class UsersContainer extends React.Component<MapPropsType & OwnProps & DispatchP
                         currentPage={this.props.currentPage}
                         users={this.props.users}
                         pageSize={this.props.pageSize}
-                        setCurrentPageHandler={this.setCurrentPageHandler}
+                        setCurrentPageHandler={this.onPageChanged}
                         follow={this.props.follow}
                         unFollow={this.props.unFollow}
                         isFetching={this.props.isFetching}
                         followUnfollowInProgress={this.props.followUnfollowInProgress}
+                        onFilterChanged={this.onFilterChanged}
                     />
                 }
             </>
@@ -66,12 +74,14 @@ class UsersContainer extends React.Component<MapPropsType & OwnProps & DispatchP
 
 const mapStateToProps = (state: StateType): MapPropsType => {
     return {
+        // Тут значения возвращают селекторы
         users: getUsersReselect(state),
         pageSize: getPageSize(state),
         totalUsersCount: getTotalUsersCount(state),
         currentPage: getCurrentPage(state),
         isFetching: getIsFetching(state),
-        followUnfollowInProgress: getFollowUnfollowInProgress(state)
+        followUnfollowInProgress: getFollowUnfollowInProgress(state),
+        filter: getUsersFilter(state)
     }
 }
 export default connect<MapPropsType, DispatchPropsType, OwnProps, StateType>(mapStateToProps, {
