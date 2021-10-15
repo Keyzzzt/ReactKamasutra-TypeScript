@@ -93,6 +93,7 @@ export const actions = {
 export const requestUsers = (currentPage: number, pageSize: number, filter: FilterType): ThunkType => async (dispatch, getState) => {
     dispatch(actions.toggleIsFetching(true))
     dispatch(actions.setCurrentPage(currentPage))
+    console.log('ok')
     dispatch(actions.setUserSearchFilter(filter))
     const response = await usersAPI.getUsers(currentPage, pageSize, filter)
     dispatch(actions.toggleIsFetching(false))

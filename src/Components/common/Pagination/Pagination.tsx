@@ -5,12 +5,12 @@ type PropsType = {
     totalItemsCount: number
     pageSize: number
     currentPage: number
-    setCurrentPageHandler: (pageNumber: number) => void
+    onPageChanged: (pageNumber: number) => void
     portionSize?: number
 
 }
 
-const Pagination: React.FC<PropsType> = ({totalItemsCount, pageSize, currentPage, setCurrentPageHandler, portionSize = 10}) => {
+const Pagination: React.FC<PropsType> = ({totalItemsCount, pageSize, currentPage, onPageChanged, portionSize = 10}) => {
     let totalUserPages = Math.ceil(totalItemsCount / pageSize)
     let pages: Array<number> = []
     for (let i = 1; i <= totalUserPages; i++) {
@@ -30,7 +30,7 @@ const Pagination: React.FC<PropsType> = ({totalItemsCount, pageSize, currentPage
                 .filter(p => p >= leftPortionPageNumber && p <= rightPortionPageNumber)
                 .map(pageNumber => <span
                     key={pageNumber}
-                    onClick={(e) => setCurrentPageHandler(pageNumber)}
+                    onClick={(e) => onPageChanged(pageNumber)}
                     // FIXME: className={currentPage === pageNumber && styles.selected}
                 >{pageNumber}
                 </span>)}

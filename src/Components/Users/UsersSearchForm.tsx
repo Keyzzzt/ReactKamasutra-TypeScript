@@ -18,11 +18,13 @@ type FormValues = {
 
 export const UsersSearchForm: React.FC<PropsType> = React.memo(({onFilterChanged}) => {
     const submit = (value: FormValues, {setSubmitting}: { setSubmitting: (isSubmitting: boolean) => void }) => {
+        // Приводим строковые значения к нормальным
         const filter: FilterType = {
             term: value.term,
             friend: value.friend === 'null' ? null : value.friend === 'true'
         }
         onFilterChanged(filter)
+        setSubmitting(false)
     }
     return (
         <div>
