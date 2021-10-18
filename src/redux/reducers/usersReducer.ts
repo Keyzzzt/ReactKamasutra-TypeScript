@@ -15,7 +15,7 @@ const initialState = {
     users: [] as Array<UserType>,
     pageSize: 100,
     totalUsersCount: 0,
-    currentPage: 1,
+    pageNumber: 1,
     isFetching: false,
     followUnfollowInProgress: [] as Array<number>, // Для того чтобы не disable все кнопки, мы сюда будем заносить UserID
     filter: {
@@ -66,7 +66,7 @@ export const usersReducer = (state = initialState, action: ActionType): InitialS
         //             return user
         //         })}
         case 'SET_ACTIVE_PAGE' :
-            return {...state, currentPage: action.payload}
+            return {...state, pageNumber: action.payload}
         case 'SET_FILTER':
             return {...state, filter: action.payload}
         default:
@@ -86,16 +86,15 @@ export const actions = {
         type: 'TOGGLE_IS_FOLLOWING',
         payload: {isFetching, userId}
     } as const),
-    setUserSearchFilter: (filter: FilterType) => ({type: 'SET_FILTER', payload: filter} as const)
+    setUserSearchFilter: (filter: FilterType) => ({type: 'SET_FILTER', payload: filter} as const),
 }
 
 // Thunk creators
-export const requestUsers = (currentPage: number, pageSize: number, filter: FilterType): ThunkType => async (dispatch, getState) => {
+export const requestUsers = (pageNumber: number, pageSize: number, filter: FilterType): ThunkType => async (dispatch, getState) => {
     dispatch(actions.toggleIsFetching(true))
-    dispatch(actions.setCurrentPage(currentPage))
-    console.log('ok')
+    dispatch(actions.setCurrentPage(pageNumber))
     dispatch(actions.setUserSearchFilter(filter))
-    const response = await usersAPI.getUsers(currentPage, pageSize, filter)
+    const response = await usersAPI.getUsers(pageNumber, pageSize, filter)
     dispatch(actions.toggleIsFetching(false))
     dispatch(actions.setUsersAC(response.items))
     dispatch(actions.setTotalUsersCountAC(response.totalCount))
@@ -105,7 +104,6 @@ export const requestUsers = (currentPage: number, pageSize: number, filter: Filt
 const _followUnFollowFlow = async (dispatch: DispatchType, userId: number, apiMethod: (userId: number) => Promise<CommonResponse>, actionCreator: (userId: number) => ActionType) => {
     dispatch(actions.toggleFollowingProgressAC(true, userId))
     const res = await apiMethod(userId)
-    console.log(res)
     if (res.resultCode === ResultCodeEnum.Success) {
         dispatch(actionCreator(userId))
     }

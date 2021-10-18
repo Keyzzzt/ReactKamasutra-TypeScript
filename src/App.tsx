@@ -1,8 +1,8 @@
 import React from "react";
-import {Route, BrowserRouter, Redirect} from 'react-router-dom'
+import {BrowserRouter, Route} from 'react-router-dom'
 import Navbar from './Components/Navbar/Navbar'
 import './styles/App.css'
-import  { UsersPage } from "./Components/UsersPage";
+import {UsersPage} from "./Components/UsersPage";
 import HeaderContainer from "./Components/HeaderContainer";
 import Login from "./Components/Forms/LoginForm";
 import {connect, Provider} from "react-redux";
@@ -51,7 +51,6 @@ class App extends React.Component<MapPropsType & DispatchPropsType> {
                 <HeaderContainer/>
                 <Navbar/>
                 <div className="app-wrapper-content">
-                    <Redirect from="/" to="/profile"/>
                     <Route path='/dialogs' render={() => <SuspendedDialogs />}/>
                     {/*Если query параметр приходит не всегда, то нужен знак ?, иначе компонента не запустится*/}
                     <Route path='/profile/:userId?' render={() => <SuspendedProfile />}/>
