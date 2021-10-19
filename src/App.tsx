@@ -16,9 +16,11 @@ import {WithSuspense} from "./HOC/withSuspense";
 // Лениво загружают компоненты, которые редко / реже посещают, для этого нужна статистика посещений
 const DialogsContainer = React.lazy(() => import('./Components/DialogsContainer'))
 const ProfileContainer = React.lazy(() => import('./Components/ProfileContainer'))
+const ChatPage = React.lazy(() => import('./Components/Pages/ChatPage/ChatPage')) // Для React.lazy нужен экспор по дефолту
 
 const SuspendedDialogs = WithSuspense(DialogsContainer)
 const SuspendedProfile = WithSuspense(ProfileContainer)
+const SuspendedChatPage = WithSuspense(ChatPage)
 
 type MapPropsType = ReturnType<typeof mapStateToProps>
 type DispatchPropsType = {
@@ -51,11 +53,12 @@ class App extends React.Component<MapPropsType & DispatchPropsType> {
                 <HeaderContainer/>
                 <Navbar/>
                 <div className="app-wrapper-content">
-                    <Route path='/dialogs' render={() => <SuspendedDialogs />}/>
+                    <Route path='/dialogs' render={() => <SuspendedDialogs/>}/>
                     {/*Если query параметр приходит не всегда, то нужен знак ?, иначе компонента не запустится*/}
-                    <Route path='/profile/:userId?' render={() => <SuspendedProfile />}/>
-                    <Route path='/users' render={() => <UsersPage />}/>
+                    <Route path='/profile/:userId?' render={() => <SuspendedProfile/>}/>
+                    <Route path='/users' render={() => <UsersPage/>}/>
                     <Route path='/login' render={() => <Login/>}/>
+                    <Route path='/chat' render={() => <SuspendedChatPage/>}/>
                 </div>
             </div>
 
