@@ -1,4 +1,8 @@
 import React, {useEffect, useState} from 'react'
+import { ChatMessageType } from '../../../api/chat-api'
+import {useDispatch, useSelector} from "react-redux";
+import {sendNewMessage, startMessagesListening, stopMessagesListening} from "../../../redux/reducers/chatReducer";
+import {StateType} from "../../../redux/reduxStore";
 
 
 const ChatPage: React.FC = () => {
@@ -10,61 +14,25 @@ const ChatPage: React.FC = () => {
 }
 
 const Chat: React.FC = () => {
-    const [webSocketChannel, setWebSocketChannel] = useState<WebSocket | null>(null)
+    const dispatch = useDispatch()
 
     useEffect(() => {
-        let ws: WebSocket
-        const reconnectOnClose = () => {
-            console.log('CLOSE')
-            setTimeout(createChannel, 1000)
-        }
-
-        function createChannel() {
-
-            ws?.removeEventListener('close', reconnectOnClose)
-            ws?.close()
-
-            ws = new WebSocket('wss://social-network.samuraijs.com/handlers/ChatHandler.ashx')
-            ws.addEventListener('close', reconnectOnClose)
-            ws.addEventListener('open', () => {
-                console.log('web socket opened')
-            })
-            setWebSocketChannel(ws)
-        }
-
-        createChannel()
-
+        dispatch(startMessagesListening())
         return () => {
-            ws?.removeEventListener('close', reconnectOnClose)
-            ws?.close()
+            dispatch(stopMessagesListening())
         }
     }, [])
-    useEffect(() => {
-
-
-    }, [webSocketChannel])
 
     return (
         <div>
-            <ChatMessages webSocketChannel={webSocketChannel}/>
-            <AddChatMessageForm webSocketChannel={webSocketChannel}/>
+            <ChatMessages />
+            <AddChatMessageForm />
         </div>
     )
 }
 
-const ChatMessages: React.FC<{ webSocketChannel: WebSocket | null }> = ({webSocketChannel}) => {
-    const [messages, setMessages] = useState<ChatMessageType[]>([])
-
-    useEffect(() => {
-        const loadMessages = (e: MessageEvent) => {
-            setMessages((prevMessages) => [...prevMessages, ...JSON.parse(e.data)])
-        };
-        webSocketChannel?.addEventListener('message', loadMessages)
-
-        return () => {
-            webSocketChannel?.removeEventListener('message', loadMessages)
-        }
-    }, [webSocketChannel])
+const ChatMessages: React.FC= () => {
+    const messages = useSelector((state: StateType) => state.chat.messages)
     return (
         <div>
             {messages.map((m: any, index) => <Message message={m} key={index}/>)}
@@ -72,12 +40,7 @@ const ChatMessages: React.FC<{ webSocketChannel: WebSocket | null }> = ({webSock
     )
 }
 
-type ChatMessageType = {
-    message: string
-    photo: string
-    userId: number
-    userName: string
-}
+
 type MessageProps = {
     message: ChatMessageType
 }
@@ -93,35 +56,26 @@ const Message: React.FC<MessageProps> = ({message}) => {
     )
 }
 
-const AddChatMessageForm: React.FC<{ webSocketChannel: WebSocket | null }> = ({webSocketChannel}) => {
+const AddChatMessageForm: React.FC = () => {
     const [message, setMessage] = useState('')
-    const [webSocketStatus, setWebSocketStatus] = useState<'pending' | 'connected'>('pending')
+    const dispatch = useDispatch()
 
-    const sendMessage = () => {
+    const sendMessageHandler = () => {
         if (!message) return
-        webSocketChannel?.send(message)
+        dispatch(sendNewMessage(message))
         setMessage('')
     }
 
-    useEffect(() => {
-        const webSocketStatus = () => {
-            setWebSocketStatus('connected')
-        }
-        webSocketChannel?.addEventListener('open', webSocketStatus)
-        return () => {
-            webSocketChannel?.removeEventListener('open', webSocketStatus)
-        }
-    }, [webSocketChannel])
     return (
         <div>
             <div>
                 <textarea onChange={(e) => setMessage(e.currentTarget.value)} value={message} name=""
-                          placeholder='Add message text'></textarea>
+                          placeholder='Add message text' />
             </div>
             <div>
                 <button
-                    onClick={sendMessage}
-                    disabled={webSocketStatus === 'pending' && webSocketChannel === null}> {/* Кнопка будет недоступна до тех пор, пока не установлено соединение.*/}
+                    onClick={sendMessageHandler}
+                    disabled={false}> {/* Кнопка будет недоступна до тех пор, пока не установлено соединение.*/}
                     Send
                 </button>
             </div>
